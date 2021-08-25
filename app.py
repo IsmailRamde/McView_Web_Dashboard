@@ -1,8 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon May 24 11:51:59 2021
+
+@author: RAMDE ISMAIL
+"""
+
+
 # Import required libraries
-import pickle
-import copy
-import pathlib
-import urllib.request
 import dash
 import math
 import datetime as dt
@@ -11,82 +16,172 @@ from dash.dependencies import Input, Output, State, ClientsideFunction
 import dash_core_components as dcc
 import dash_html_components as html
 import base64
+import plotly.express as px
+import plotly.figure_factory as ff
+import plotly.graph_objects as go
+import read_write_google_API as api
+import numpy as np
+import update_figure as upfig
 
-# Multi-dropdown options
-from controls import COUNTIES, WELL_STATUSES, WELL_TYPES, WELL_COLORS
+
+
+
 
 
 # get relative data folder
-PATH = pathlib.Path(__file__).parent
-DATA_PATH = PATH.joinpath("data").resolve()
+#PATH = pathlib.Path(__file__).parent
+#DATA_PATH = PATH.joinpath("data").resolve()
 
 app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=device-width"}])
 app.title = 'McView'
 server = app.server
 
-# Create controls
-county_options = [
-    {"label": str(COUNTIES[county]), "value": str(county)} for county in COUNTIES
-]
-
-well_status_options = [
-    {"label": str(WELL_STATUSES[well_status]), "value": str(well_status)}
-    for well_status in WELL_STATUSES
-]
-
-well_type_options = [
-    {"label": str(WELL_TYPES[well_type]), "value": str(well_type)}
-    for well_type in WELL_TYPES
-]
-
 
 # Download pickle file
-urllib.request.urlretrieve(
-    "https://raw.githubusercontent.com/plotly/datasets/master/dash-sample-apps/dash-oil-and-gas/data/points.pkl",
-    DATA_PATH.joinpath("points.pkl"),
-)
-points = pickle.load(open(DATA_PATH.joinpath("points.pkl"), "rb"))
+#urllib.request.urlretrieve(
+#    "https://raw.githubusercontent.com/plotly/datasets/master/dash-sample-apps/dash-oil-and-gas/data/points.pkl",
+#    DATA_PATH.joinpath("points.pkl"),
+#)
+#points = pickle.load(open(DATA_PATH.joinpath("points.pkl"), "rb"))
 
 
-# Load data
-df = pd.read_csv(
-    "https://github.com/plotly/datasets/raw/master/dash-sample-apps/dash-oil-and-gas/data/wellspublic.csv",
-    low_memory=False,
-)
-df["Date_Well_Completed"] = pd.to_datetime(df["Date_Well_Completed"])
-df = df[df["Date_Well_Completed"] > dt.datetime(1960, 1, 1)]
-
-trim = df[["API_WellNo", "Well_Type", "Well_Name"]]
-trim.index = trim["API_WellNo"]
-dataset = trim.to_dict(orient="index")
+# color
+colors = {
+    'background': '#111111',
+    'text': '#7FDBFF'
+}
 
 
-# Create global chart template
-mapbox_access_token = "pk.eyJ1IjoiaGVybWNwaHkiLCJhIjoiY2todTdhYnpoMDJqNjMxbzJvNXRmdjd1cCJ9.7AhfYdergH8JpGSTV_X3mA"
+##********************************** LOAD DATA *******************************
 
-layout = dict(
-    autosize=True,
-    automargin=True,
-    margin=dict(l=30, r=30, b=20, t=40),
-    hovermode="closest",
-    plot_bgcolor="#F9F9F9",
-    paper_bgcolor="#F9F9F9",
-    legend=dict(font=dict(size=10), orientation="h"),
-    title="Satellite Overview",
-    mapbox=dict(
-        accesstoken=mapbox_access_token,
-        style="light",
-        center=dict(lon=-78.05, lat=42.54),
-        zoom=7,
-    ),
-)
+#    Loading of PT (Pressure), TT (Temperature Transmission), 
+#    FT (Flow Transmission) and PCV (Pressure Control Valve) data.
 
-image_filename = "C:\\Users\\h.rivera\\dash-sample-apps\\apps\\dash-oil-and-gas\\assets\\dash-logo.png" # replace with your own image
+df1_berlin = api.SortH2MDistributionData()  
+df1_berlin = pd.DataFrame(df1_berlin)
+df1_berlin.fillna(df1_berlin.mean(), inplace=True)
+#imputer = SimpleImputer(missing_values=np.nan, strategy="mean")
+#imputer.fit_transform(df1)
+#df1["TimeStr"].head
+#df1["TT 8.201"]
+#df1.to_excel("exemple1.xlsx", index=False)
+df1_berlin.rename(columns={'PT 8.202a': 'PT', 'TT 8.201': 'TT', 'FT 8.201': 'FT', 'PCV 8.201': 'PCV'}, inplace=True)
+#df1_berlin.to_excel("exemple13.xlsx", index=False)
+
+
+#    Loading of the location data of the different stations.
+
+df3 = api.Data_MAP()  
+df3 = pd.DataFrame(df3)
+df3.rename(columns={'Latitud': 'lat', 'Longitud': 'lon'}, inplace=True)
+#df3.to_excel("exemple3.xlsx", index=False)
+#df3.columns
+#df3 = pd.read_excel("/home/ismael/Bureau/plotly/McView_WebDashboard/data/station_location.xlsx")
+
+
+# Here we retrieve the status column and calculate for each modality the number of stations
+st = df3['Status']
+st = list(st)
+val1 = st.count('Offline')
+val2 = st.count('Not Available')
+val3 = st.count('Coming Soon')
+val4 = st.count('Available')
+
+
+#    Loading of Energy data.
+
+df2 = api.SortH2MEnergyData()
+df2 = pd.DataFrame(df2)
+#df2.to_excel("exemple5.xlsx", index=False)
+#df2 = pd.read_csv(
+#    "/home/ismael/Bureau/plotly/McView_WebDashboard/data/HRS_CNR_WEEK_Report_KPis_energy.csv",
+#    low_memory=False,
+#)
+
+
+
+#    Loading of activation/day data.
+
+df4 = api.SortH2MotorsData()
+df4 = pd.DataFrame(df4)
+df4.rename(columns={'Air Compressor': 'Air_Compressor', 
+                    'D1 Cooling Unit': 'D1_Cooling_Unit', 
+                    'Air Extractor': 'Air_Extractor'}, inplace=True)
+df4['Air_Compressor'].replace('', '0', inplace=True)
+df4['D1_Cooling_Unit'].replace('', '0', inplace=True)
+df4['Air_Extractor'].replace('', '0', inplace=True)
+#df4.to_excel("exemple4.xlsx", index=False)
+#df4 = pd.read_csv(
+#    "/home/ismael/Bureau/plotly/McView_WebDashboard/data/activation.csv",
+#    low_memory=False,
+#)
+
+
+#******************************************************************************
+
+
+
+#********************************** PLOTS *************************************
+
+#fig5 = px.line(df1, x="TimeStr", y=['PT', 'TT', 'FT', 'PCV'],
+#              hover_data={"TimeStr": "|%B %d, %Y"})
+#fig5.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+#df1.to_excel("exemple.xlsx", index=False)
+
+# plot Map (satellite overview)
+fig1 = px.scatter_mapbox(df3, lat="lat", lon="lon", hover_name="City", hover_data=["Country", "Project"],
+                        color="Status", zoom=3, height=300)
+fig1.update_layout(mapbox_style="open-street-map")
+fig1.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+#fig1.show()
+
+# station by location
+fig4 = px.sunburst(df3, path=['Country', 'City', 'Project'])
+fig4.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+#fig4.show()
+
+# energy
+#fig2 = px.line(df2, x="TimeStr", y=['kVA','KVAR','kW'])
+#fig2.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+#fig2.show()
+
+# activation/day
+#fig6 = go.Figure()
+#fig6.add_trace(go.Bar(
+#    x=df4["Day"],
+#    y=df4["Air_Compressor"],
+#    name='Air Compressor',
+#    marker_color='indianred'
+#))
+#fig6.add_trace(go.Bar(
+#    x=df4["Day"],
+#    y=df4["Air_Extractor"],
+#    name='Air Extractor',
+#    marker_color='lightsalmon'
+#))
+#fig6.add_trace(go.Bar(
+#    x=df4["Day"],
+#    y=df4["D1_Cooling_Unit"],
+#    name='D1 Cooling Unit',
+#    marker_color='olive'
+#))
+#
+## Here we modify the tickangle of the xaxis, resulting in rotated labels.
+#fig6.update_layout(barmode='group', xaxis_tickangle=-45)
+#fig6.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+##fig6.show()
+
+
+# McPhy logo
+image_filename = "/home/ismael/Bureau/plotly/McView_WebDashboard/assets/dash-logo.png"
 encoded_image = base64.b64encode(open(image_filename, 'rb').read())
 
+#******************************************************************************
 
 
-# Create app layout
+
+
+# ***************************** CREATE APP LAYOUT *****************************
 app.layout = html.Div(
     [
         dcc.Store(id="aggregate_data"),
@@ -126,6 +221,7 @@ app.layout = html.Div(
                     className="one-half column",
                     id="title",
                 ),
+                # Learn more button
                 html.Div(
                     [
                         html.A(
@@ -141,101 +237,200 @@ app.layout = html.Div(
             className="row flex-display",
             style={"margin-bottom": "25px"},
         ),
+        # **** The different selection options are implemented in this part ****
         html.Div(
             [
+                # Station selection
                 html.Div(
                     [
+                        html.P("Select station:", className="control_label"),
+                            dcc.Dropdown(
+                                    id='station_selector',
+                                    options=[
+                                            {'label': 'Berlin', 'value': 'bl'},
+                                            {'label': 'Bethune', 'value': 'bt'},
+                                            {'label': 'Grenoble', 'value': 'gr'},
+                                            {'label': 'Le Mans', 'value': 'lm'},
+                                            {'label': 'Lyon', 'value': 'ly'},
+                                            {'label': 'Rouen', 'value': 'rn'},
+                                            {'label': 'Rostock', 'value': 'rk'},
+                                            {'label': 'Rungis', 'value': 'rs'},
+                                            {'label': 'Sarreguemines', 'value': 'sr'},
+                                            {'label': 'Singapore', 'value': 'sp'},
+                                            {'label': 'Sorigny', 'value': 'sy'},
+                                            {'label': 'Valence', 'value': 'vl'},
+                                            ],
+                                    value='gr',
+                                    className="dcc_control",
+                                    ),
+                        
+                        html.P("Select distribution:", className="control_label"),
+                        dcc.RadioItems(
+                            id="distribution_selector",
+                            options=[
+                                {"label": "Distribution 1 ", "value": "dis1"},
+                                {"label": "Distribution 2", "value": "dist2"},
+                            ],
+                            value="dis1",
+                            labelStyle={"display": "inline-block"},
+                            className="dcc_control",
+                        ),
+                               
+                        # Sensor selection
+                        html.P("Select captor:", className="control_label"),
+                        dcc.RadioItems(
+                            id="captor_selector",
+                            options=[
+                                {"label": "captor 1 ", "value": "cap1"},
+                                {"label": "captor 2", "value": "cap2"},
+                                {"label": "captor 3", "value": "cap3"},
+                            ],
+                            value="cap1",
+                            labelStyle={"display": "inline-block"},
+                            className="dcc_control",
+                        ),
+                                
+                        # Selection of the year
                         html.P(
-                            "Filter by construction date (or select range in histogram):",
+                            "Filter by year :",
                             className="control_label",
                         ),
                         dcc.RangeSlider(
+#                            id="year_slider",
+#                            min=2020,
+#                            max=2021,
+#                            value=[2020, 2021],
+#                            className="dcc_control",
+                            
                             id="year_slider",
-                            min=1960,
-                            max=2017,
-                            value=[1990, 2010],
+                            min=df1_berlin['Year'].min(),
+                            max=df1_berlin['Year'].max(),
+                            value=[2015, 2022],
+                            marks={str(Year): str(Year) for Year in df1_berlin['Year'].unique()},
+                            step=None,
                             className="dcc_control",
                         ),
-                        html.P("Filter by Status:", className="control_label"),
+                                
+                        # selection of the month
+                        html.P(
+                            "Filter by month :",
+                            className="control_label",
+                        ),
+                        dcc.RangeSlider(
+                            id="month_slider",
+                            min=df1_berlin['Month'].min(),
+                            max=df1_berlin['Month'].max(),
+                            value=[1, 31],
+                            marks={str(Month): str(Month) for Month in df1_berlin['Month'].unique()},
+                            step=None,
+                            className="dcc_control",
+                        ),
+                        
+                        # selection of the day        
+                        html.P(
+                            "Filter by day :",
+                            className="control_label",
+                        ),
+                        dcc.RangeSlider(
+                            id="day_slider",
+                            min=df1_berlin['Day'].min(),
+                            max=df1_berlin['Day'].max(),
+                            value=[1, 31],
+                            marks={str(Day): str(Day) for Day in df1_berlin['Day'].unique()},
+                            step=None,
+                            className="dcc_control",
+                        ),
+                                
+                        # Time selection
+                        html.P(
+                            "Filter by hour :",
+                            className="control_label",
+                        ),
+                        dcc.RangeSlider(
+                            id="hour_slider",
+                            min=0,
+                            max=24,
+                            value=[0, 24],
+                            marks={str(Hour): str(Hour) for Hour in df1_berlin['Hour'].unique()},
+                            step=None,
+                            className="dcc_control",
+                        ),
+                        
+                        # Curve selection
+                        html.P("Filter by curve:", className="control_label"),
                         dcc.RadioItems(
-                            id="well_status_selector",
+                            id="curve_selector",
                             options=[
                                 {"label": "All ", "value": "all"},
-                                {"label": "Active only ", "value": "active"},
-                                {"label": "Customize ", "value": "custom"},
+                                {"label": "PT ", "value": "pt"},
+                                {"label": "TT ", "value": "tt"},
+                                {"label": "FT ", "value": "ft"},
+                                {"label": "PCV ", "value": "pcv"}                                ,
                             ],
-                            value="active",
+                            value="all",
                             labelStyle={"display": "inline-block"},
-                            className="dcc_control",
-                        ),
-                        dcc.Dropdown(
-                            id="well_statuses",
-                            options=well_status_options,
-                            multi=True,
-                            value=list(WELL_STATUSES.keys()),
-                            className="dcc_control",
-                        ),
-                        dcc.Checklist(
-                            id="lock_selector",
-                            options=[{"label": "Lock camera", "value": "locked"}],
-                            className="dcc_control",
-                            value=[],
-                        ),
-                        html.P("Filter by Product Type:", className="control_label"),
-                        dcc.RadioItems(
-                            id="well_type_selector",
-                            options=[
-                                {"label": "All ", "value": "all"},
-                                {"label": "H70 ", "value": "productive"},
-                                {"label": "H35", "value": "custom"},
-                            ],
-                            value="productive",
-                            labelStyle={"display": "inline-block"},
-                            className="dcc_control",
-                        ),
-                        dcc.Dropdown(
-                            id="well_types",
-                            options=well_type_options,
-                            multi=True,
-                            value=list(WELL_TYPES.keys()),
                             className="dcc_control",
                         ),
                     ],
                     className="pretty_container four columns",
                     id="cross-filter-options",
                 ),
+                
+
+                # The mini containers located at the very top of the web page
                 html.Div(
                     [
                         html.Div(
-                            [
+                            [       
                                 html.Div(
-                                    [html.H6(id="well_text"), html.P("H70 Available")],
-                                    id="wells",
+                                    [html.H6(id="station_offline"), html.P("Station Offline ")],
+                                    id="offline",
                                     className="mini_container",
                                 ),
                                 html.Div(
-                                    [html.H6(id="gasText"), html.P("H70 Unavailable ")],
-                                    id="gas",
+                                    [html.H6(id="station_not_available"), html.P("Station Not Available ")],
+                                    id="not_available",
                                     className="mini_container",
                                 ),
                                 html.Div(
-                                    [html.H6(id="oilText"), html.P("H35 Available")],
-                                    id="oil",
+                                    [html.H6(id="station_coming_soon"), html.P("Station Coming Soon")],
+                                    id="coming_soon",
                                     className="mini_container",
                                 ),
                                 html.Div(
-                                    [html.H6(id="waterText"), html.P("H35 Unavailable")],
-                                    id="water",
+                                    [html.H6(id="station_available"), html.P("Station Available")],
+                                    id="available",
                                     className="mini_container",
                                 ),
                             ],
                             id="info-container",
                             className="row container-display",
                         ),
-                        html.Div(
-                            [dcc.Graph(id="count_graph")],
-                            id="countGraphContainer",
-                            className="pretty_container",
+                                    
+                        # ** Change the graph on the first graphical display **
+                        html.Div([
+                                html.Div(
+                                         [html.P("Visualization:", className="control_label"),
+                                          dcc.RadioItems(
+                                                  id="graph_selector",
+                                                  options=[
+                                                          {"label": "Viewing 1 ", "value": "view1"},
+                                                          {"label": "Viewing 2", "value": "view2"},
+                                                          ],
+                                                          value="view1",
+                                                          labelStyle={"display": "inline-block"},
+                                                          className="dcc_control",
+                                                          )],
+                                        ),
+                                
+                                html.Div(
+                                        [html.P("Data evolution over time", style={'textAlign': 'center'}), 
+                                         dcc.Graph(id="count_graph")],
+                                         id="countGraphContainer",
+                                         className="pretty_container",
+                                         ),
+                                        
+                                ],
                         ),
                     ],
                     id="right-column",
@@ -244,27 +439,41 @@ app.layout = html.Div(
             ],
             className="row flex-display",
         ),
+
+
+        # ****************** Second graphic display *********************
         html.Div(
-            [
+            [ 
                 html.Div(
-                    [dcc.Graph(id="main_graph")],
-                    className="pretty_container seven columns",
+                    [html.P("Satellite Overview", style={'textAlign': 'center'}), 
+                     dcc.Graph(id="main_graph", figure=fig1)],
+                     className="pretty_container seven columns",
                 ),
+                        
+                # ***************** Third graphic display ********************
                 html.Div(
-                    [dcc.Graph(id="individual_graph")],
+                    [html.P("Stations by location", style={'textAlign': 'center'}), 
+                     dcc.Graph(id="pie_graph", figure=fig4)],
                     className="pretty_container five columns",
                 ),
             ],
             className="row flex-display",
         ),
+
+
+        # ****************** Fourth graphic display *********************
         html.Div(
             [
                 html.Div(
-                    [dcc.Graph(id="pie_graph")],
+                    [html.P("Energy", style={'textAlign': 'center'}),
+                     dcc.Graph(id="energy_graph")],
                     className="pretty_container seven columns",
                 ),
+                        
+                # ***************** Fifth graphic display ********************
                 html.Div(
-                    [dcc.Graph(id="aggregate_graph")],
+                    [html.P("Activations/Day [ Current Month ]", style={'textAlign': 'center'}),
+                     dcc.Graph(id="motors_graph")],
                     className="pretty_container five columns",
                 ),
             ],
@@ -274,454 +483,196 @@ app.layout = html.Div(
     id="mainContainer",
     style={"display": "flex", "flex-direction": "column"},
 )
+# *****************************************************************************
 
 
-# Helper functions ------------------------------------------------------------------------------------------------------------------------------------------------
-def human_format(num):
-    if num == 0:
-        return "0"
-
-    magnitude = int(math.log(num, 1000))
-    mantissa = str(int(num / (1000 ** magnitude)))
-    return mantissa + ["", "K", "M", "G", "T", "P"][magnitude]
 
 
-def filter_dataframe(df, well_statuses, well_types, year_slider):
-    dff = df[
-        df["Well_Status"].isin(well_statuses)
-        & df["Well_Type"].isin(well_types)
-        & (df["Date_Well_Completed"] > dt.datetime(year_slider[0], 1, 1))
-        & (df["Date_Well_Completed"] < dt.datetime(year_slider[1], 1, 1))
+
+
+# **************************** HELPER FUNCTIONS *******************************
+
+# Data filter function
+def filter_dataframe(df, year_slider, month_slider):
+    """
+    Input :
+        df1: PT, TT, FT and PCV data frame
+        year_slider: recovers the selected year
+        month_slider: recovers the selected month
+        
+    Output :
+        filtered_df: filtered data
+    """
+    filtered_df = df[
+            (df["Year"] > year_slider[0])
+           &(df["Year"] < year_slider[1])
+           &(df["Month"] > month_slider[0])
+           &(df["Month"] < month_slider[1])
     ]
-    return dff
+    return filtered_df
 
 
-def produce_individual(api_well_num):
-    try:
-        points[api_well_num]
-    except:
-        return None, None, None, None
-
-    index = list(
-        range(min(points[api_well_num].keys()), max(points[api_well_num].keys()) + 1)
-    )
-    gas = []
-    oil = []
-    water = []
-
-    for year in index:
-        try:
-            gas.append(points[api_well_num][year]["Gas Produced, MCF"])
-        except:
-            gas.append(0)
-        try:
-            oil.append(points[api_well_num][year]["Oil Produced, bbl"])
-        except:
-            oil.append(0)
-        try:
-            water.append(points[api_well_num][year]["Water Produced, bbl"])
-        except:
-            water.append(0)
-
-    return index, gas, oil, water
 
 
-def produce_aggregate(selected, year_slider):
 
-    index = list(range(max(year_slider[0], 1985), 2016))
-    gas = []
-    oil = []
-    water = []
+# **************************** CREATE CALLBACKS ******************************* 
 
-    for year in index:
-        count_gas = 0
-        count_oil = 0
-        count_water = 0
-        for api_well_num in selected:
-            try:
-                count_gas += points[api_well_num][year]["Gas Produced, MCF"]
-            except:
-                pass
-            try:
-                count_oil += points[api_well_num][year]["Oil Produced, bbl"]
-            except:
-                pass
-            try:
-                count_water += points[api_well_num][year]["Water Produced, bbl"]
-            except:
-                pass
-        gas.append(count_gas)
-        oil.append(count_oil)
-        water.append(count_water)
-
-    return index, gas, oil, water
+#@app.callback(
+#    Output('count_graph', 'figure'),
+#    Input('month_slider', 'value'))
+#def update_figure(selected_month):
+#    filtered_df = df1[
+#            (df1["Year"] > year_slider[0])
+#           &(df1["Year"] < year_slider[1])
+#    ]
+##    filtered_df = df1[df1['Month'] == selected_month]
+#    
+#
+#
+#    fig = px.line(filtered_df, x='Month', y="Value")
+##    fig.show()
+#
+#    return fig
 
 
-# Create callbacks --------------------------------------------------------------------------------------------------------------------------------------
-app.clientside_callback(
-    ClientsideFunction(namespace="clientside", function_name="resize"),
-    Output("output-clientside", "children"),
-    [Input("count_graph", "figure")],
-)
-
-
+# Callback for first graphical display
 @app.callback(
-    Output("aggregate_data", "data"),
-    [
-        Input("well_statuses", "value"),
-        Input("well_types", "value"),
-        Input("year_slider", "value"),
-    ],
-)
-def update_production_text(well_statuses, well_types, year_slider):
+    Output('count_graph', 'figure'),
+    Input('year_slider', 'value'),
+    Input('month_slider', 'value'),
+    Input('curve_selector', 'value'),
+    Input('graph_selector', 'value'),
+    Input('station_selector', 'value'))
 
-    dff = filter_dataframe(df, well_statuses, well_types, year_slider)
-    selected = dff["API_WellNo"].values
-    index, gas, oil, water = produce_aggregate(selected, year_slider)
-    return [human_format(sum(gas)), human_format(sum(oil)), human_format(sum(water))]
-
-
-# Radio -> multi
-@app.callback(
-    Output("well_statuses", "value"), [Input("well_status_selector", "value")]
-)
-def display_status(selector):
-    if selector == "all":
-        return list(WELL_STATUSES.keys())
-    elif selector == "active":
-        return ["AC"]
-    return []
-
-
-# Radio -> multi
-@app.callback(Output("well_types", "value"), [Input("well_type_selector", "value")])
-def display_type(selector):
-    if selector == "all":
-        return list(WELL_TYPES.keys())
-    elif selector == "productive":
-        return ["GD", "GE", "GW", "IG", "IW", "OD", "OE", "OW"]
-    return []
-
-
-# Slider -> count graph
-@app.callback(Output("year_slider", "value"), [Input("count_graph", "selectedData")])
-def update_year_slider(count_graph_selected):
-
-    if count_graph_selected is None:
-        return [1990, 2010]
-
-    nums = [int(point["pointNumber"]) for point in count_graph_selected["points"]]
-    return [min(nums) + 1960, max(nums) + 1961]
-
-
-# Selectors -> well text
-@app.callback(
-    Output("well_text", "children"),
-    [
-        Input("well_statuses", "value"),
-        Input("well_types", "value"),
-        Input("year_slider", "value"),
-    ],
-)
-def update_well_text(well_statuses, well_types, year_slider):
-
-    dff = filter_dataframe(df, well_statuses, well_types, year_slider)
-    return dff.shape[0]
-
-
-@app.callback(
-    [
-        Output("gasText", "children"),
-        Output("oilText", "children"),
-        Output("waterText", "children"),
-    ],
-    [Input("aggregate_data", "data")],
-)
-def update_text(data):
-    return data[0] + " mcf", data[1] + " bbl", data[2] + " bbl"
-
-
-# Selectors -> main graph
-@app.callback(
-    Output("main_graph", "figure"),
-    [
-        Input("well_statuses", "value"),
-        Input("well_types", "value"),
-        Input("year_slider", "value"),
-    ],
-    [State("lock_selector", "value"), State("main_graph", "relayoutData")],
-)
-def make_main_figure(
-    well_statuses, well_types, year_slider, selector, main_graph_layout
-):
-
-    dff = filter_dataframe(df, well_statuses, well_types, year_slider)
-
-    traces = []
-    for well_type, dfff in dff.groupby("Well_Type"):
-        trace = dict(
-            type="scattermapbox",
-            lon=dfff["Surface_Longitude"],
-            lat=dfff["Surface_latitude"],
-            text=dfff["Well_Name"],
-            customdata=dfff["API_WellNo"],
-            name=WELL_TYPES[well_type],
-            marker=dict(size=4, opacity=0.6),
-        )
-        traces.append(trace)
-
-    # relayoutData is None by default, and {'autosize': True} without relayout action
-    if main_graph_layout is not None and selector is not None and "locked" in selector:
-        if "mapbox.center" in main_graph_layout.keys():
-            lon = float(main_graph_layout["mapbox.center"]["lon"])
-            lat = float(main_graph_layout["mapbox.center"]["lat"])
-            zoom = float(main_graph_layout["mapbox.zoom"])
-            layout["mapbox"]["center"]["lon"] = lon
-            layout["mapbox"]["center"]["lat"] = lat
-            layout["mapbox"]["zoom"] = zoom
-
-    figure = dict(data=traces, layout=layout)
-    return figure
-
-
-# Main graph -> individual graph
-@app.callback(Output("individual_graph", "figure"), [Input("main_graph", "hoverData")])
-def make_individual_figure(main_graph_hover):
-
-    layout_individual = copy.deepcopy(layout)
-
-    if main_graph_hover is None:
-        main_graph_hover = {
-            "points": [
-                {"curveNumber": 4, "pointNumber": 569, "customdata": 31101173130000}
-            ]
-        }
-
-    chosen = [point["customdata"] for point in main_graph_hover["points"]]
-    index, gas, oil, water = produce_individual(chosen[0])
-
-    if index is None:
-        annotation = dict(
-            text="No data available",
-            x=0.5,
-            y=0.5,
-            align="center",
-            showarrow=False,
-            xref="paper",
-            yref="paper",
-        )
-        layout_individual["annotations"] = [annotation]
-        data = []
+def update_figure(year_slider, month_slider, curve_selector, graph_selector, station_selector):
+    """
+    Input :
+        year_slider: recovers the selected year
+        month_slider: recovers the selected month
+        curve_selector: recovers the selected curve
+        graph_selector: recovers the selected graph
+        station_selector: recovers the selected station
+        
+    Output :
+        figure: graph
+    """
+    filtered_df_berlin = filter_dataframe(df1_berlin, year_slider, month_slider)
+    
+    if station_selector == 'bl':
+        figure = upfig.update_figure_general(year_slider, month_slider, curve_selector, graph_selector, filtered_df_berlin)
+        
     else:
-        data = [
-            dict(
-                type="scatter",
-                mode="lines+markers",
-                name="Gas Produced (mcf)",
-                x=index,
-                y=gas,
-                line=dict(shape="spline", smoothing=2, width=1, color="#fac1b7"),
-                marker=dict(symbol="diamond-open"),
-            ),
-            dict(
-                type="scatter",
-                mode="lines+markers",
-                name="Oil Produced (bbl)",
-                x=index,
-                y=oil,
-                line=dict(shape="spline", smoothing=2, width=1, color="#a9bb95"),
-                marker=dict(symbol="diamond-open"),
-            ),
-            dict(
-                type="scatter",
-                mode="lines+markers",
-                name="Water Produced (bbl)",
-                x=index,
-                y=water,
-                line=dict(shape="spline", smoothing=2, width=1, color="#92d8d8"),
-                marker=dict(symbol="diamond-open"),
-            ),
-        ]
-        layout_individual["title"] = dataset[chosen[0]]["Well_Name"]
-
-    figure = dict(data=data, layout=layout_individual)
+        None
+        
     return figure
 
 
-# Selectors, main graph -> aggregate graph
+
+# Callback for fourth graphical display
 @app.callback(
-    Output("aggregate_graph", "figure"),
-    [
-        Input("well_statuses", "value"),
-        Input("well_types", "value"),
-        Input("year_slider", "value"),
-        Input("main_graph", "hoverData"),
-    ],
-)
-def make_aggregate_figure(well_statuses, well_types, year_slider, main_graph_hover):
+    Output('energy_graph', 'figure'),
+    Input('year_slider', 'value'),
+    Input('month_slider', 'value'),
+    Input('station_selector', 'value'))
 
-    layout_aggregate = copy.deepcopy(layout)
-
-    if main_graph_hover is None:
-        main_graph_hover = {
-            "points": [
-                {"curveNumber": 4, "pointNumber": 569, "customdata": 31101173130000}
-            ]
-        }
-
-    chosen = [point["customdata"] for point in main_graph_hover["points"]]
-    well_type = dataset[chosen[0]]["Well_Type"]
-    dff = filter_dataframe(df, well_statuses, well_types, year_slider)
-
-    selected = dff[dff["Well_Type"] == well_type]["API_WellNo"].values
-    index, gas, oil, water = produce_aggregate(selected, year_slider)
-
-    data = [
-        dict(
-            type="scatter",
-            mode="lines",
-            name="Gas Produced (mcf)",
-            x=index,
-            y=gas,
-            line=dict(shape="spline", smoothing="2", color="#F9ADA0"),
-        ),
-        dict(
-            type="scatter",
-            mode="lines",
-            name="Oil Produced (bbl)",
-            x=index,
-            y=oil,
-            line=dict(shape="spline", smoothing="2", color="#849E68"),
-        ),
-        dict(
-            type="scatter",
-            mode="lines",
-            name="Water Produced (bbl)",
-            x=index,
-            y=water,
-            line=dict(shape="spline", smoothing="2", color="#59C3C3"),
-        ),
-    ]
-    layout_aggregate["title"] = "Aggregate: " + WELL_TYPES[well_type]
-
-    figure = dict(data=data, layout=layout_aggregate)
+def update_figure_energy(year_slider, month_slider, station_selector):
+    """
+    Input :
+        year_slider: recovers the selected year
+        month_slider: recovers the selected month
+        station_selector: recovers the selected station
+        
+    Output :
+        figure: graph
+    """
+    filtered_df1_berlin = filter_dataframe(df2, year_slider, month_slider)
+    
+    if station_selector == 'bl':
+        figure = upfig.update_figure_energy_general(year_slider, month_slider, filtered_df1_berlin)
+        
+    else:
+        None
+    
     return figure
 
 
-# Selectors, main graph -> pie graph
+
+# Callback for fifth graphical display
 @app.callback(
-    Output("pie_graph", "figure"),
-    [
-        Input("well_statuses", "value"),
-        Input("well_types", "value"),
-        Input("year_slider", "value"),
-    ],
-)
-def make_pie_figure(well_statuses, well_types, year_slider):
+    Output('motors_graph', 'figure'),
+    Input('year_slider', 'value'),
+    Input('month_slider', 'value'),
+    Input('station_selector', 'value'))
 
-    layout_pie = copy.deepcopy(layout)
-
-    dff = filter_dataframe(df, well_statuses, well_types, year_slider)
-
-    selected = dff["API_WellNo"].values
-    index, gas, oil, water = produce_aggregate(selected, year_slider)
-
-    aggregate = dff.groupby(["Well_Type"]).count()
-
-    data = [
-        dict(
-            type="pie",
-            labels=["Gas", "Oil", "Water"],
-            values=[sum(gas), sum(oil), sum(water)],
-            name="Production Breakdown",
-            text=[
-                "Total Gas Produced (mcf)",
-                "Total Oil Produced (bbl)",
-                "Total Water Produced (bbl)",
-            ],
-            hoverinfo="text+value+percent",
-            textinfo="label+percent+name",
-            hole=0.5,
-            marker=dict(colors=["#fac1b7", "#a9bb95", "#92d8d8"]),
-            domain={"x": [0, 0.45], "y": [0.2, 0.8]},
-        ),
-        dict(
-            type="pie",
-            labels=[WELL_TYPES[i] for i in aggregate.index],
-            values=aggregate["API_WellNo"],
-            name="Well Type Breakdown",
-            hoverinfo="label+text+value+percent",
-            textinfo="label+percent+name",
-            hole=0.5,
-            marker=dict(colors=[WELL_COLORS[i] for i in aggregate.index]),
-            domain={"x": [0.55, 1], "y": [0.2, 0.8]},
-        ),
-    ]
-    layout_pie["title"] = "Production Summary: {} to {}".format(
-        year_slider[0], year_slider[1]
-    )
-    layout_pie["font"] = dict(color="#777777")
-    layout_pie["legend"] = dict(
-        font=dict(color="#CCCCCC", size="10"), orientation="h", bgcolor="rgba(0,0,0,0)"
-    )
-
-    figure = dict(data=data, layout=layout_pie)
+def update_figure_motors(year_slider, month_slider, station_selector):
+    """
+    Input :
+        year_slider: recovers the selected year
+        month_slider: recovers the selected month
+        station_selector: recovers the selected station
+        
+    Output :
+        figure: graph
+    """
+    filtered_df2_berlin = filter_dataframe(df4, year_slider, month_slider)
+    
+    if station_selector == 'bl':
+        figure = upfig.update_figure_motors_general(year_slider, month_slider, filtered_df2_berlin)
+        
+    else:
+        None
+    
     return figure
 
 
-# Selectors -> count graph
+
+#### callback for mini containers
+"""
+    In each of the functions we retrieve the number of stations for each 
+    modality in the status column and we display them in the different 
+    containers.    
+"""
 @app.callback(
-    Output("count_graph", "figure"),
-    [
-        Input("well_statuses", "value"),
-        Input("well_types", "value"),
-        Input("year_slider", "value"),
-    ],
-)
-def make_count_figure(well_statuses, well_types, year_slider):
-
-    layout_count = copy.deepcopy(layout)
-
-    dff = filter_dataframe(df, well_statuses, well_types, [1960, 2017])
-    g = dff[["API_WellNo", "Date_Well_Completed"]]
-    g.index = g["Date_Well_Completed"]
-    g = g.resample("A").count()
-
-    colors = []
-    for i in range(1960, 2018):
-        if i >= int(year_slider[0]) and i < int(year_slider[1]):
-            colors.append("rgb(123, 199, 255)")
-        else:
-            colors.append("rgba(123, 199, 255, 0.2)")
-
-    data = [
-        dict(
-            type="scatter",
-            mode="markers",
-            x=g.index,
-            y=g["API_WellNo"] / 2,
-            name="All Wells",
-            opacity=0,
-            hoverinfo="skip",
-        ),
-        dict(
-            type="bar",
-            x=g.index,
-            y=g["API_WellNo"],
-            name="All Wells",
-            marker=dict(color=colors),
-        ),
-    ]
-
-    layout_count["title"] = "Total H2 Distributed/Year"
-    layout_count["dragmode"] = "select"
-    layout_count["showlegend"] = False
-    layout_count["autosize"] = True
-
-    figure = dict(data=data, layout=layout_count)
-    return figure
+    Output("station_offline", "children"),
+    Input("aggregate_data", "data"))
+def update_offline(data):
+    
+    return val1
 
 
-# Main ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+@app.callback(
+    Output("station_not_available", "children"),
+    Input("aggregate_data", "data"))
+def update_not_available(data):
+    return val2
+
+
+
+@app.callback(
+    Output("station_coming_soon", "children"),
+    Input("aggregate_data", "data"))
+def update_coming_soon(data):
+    return val3
+
+
+
+@app.callback(
+    Output("station_available", "children"),
+    Input("aggregate_data", "data"))
+def update_available(data):
+    return val4
+
+
+
+
+
+
+# ****************************** MAIN ****************************************
+"""
+    Allows Dash to automatically refresh the browser when we make a change to 
+    our code. 
+    We can disable this option with app.run_server(dev_tools_hot_reload=False)
+"""
 if __name__ == "__main__":
     app.run_server(debug=True)

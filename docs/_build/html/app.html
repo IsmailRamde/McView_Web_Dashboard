@@ -1,0 +1,353 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>app module &mdash; McView WebDashboard 1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="update_figure" href="update_figure.html" />
+    <link rel="prev" title="McView WebDashboard" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> McView WebDashboard
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">McView WebDashboard</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">app module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="update_figure.html">update_figure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="read_write_google_API.html">read_write_google_API module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="The%20web%20application.html">The web application</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">McView WebDashboard</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="modules.html">McView WebDashboard</a> &raquo;</li>
+        
+      <li>app module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/app.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="app-module">
+<h1>app module<a class="headerlink" href="#app-module" title="Permalink to this headline">¶</a></h1>
+<p>The <em>app.py</em> module is the main script of our Dash application. This script is composed of two parts : the <strong>layout</strong> (app.layout) and the <strong>Dash Callbacks</strong>.
+It also contains package loads and imports of other modules that are necessary for the application to work, several independent commands (loading and preprocessing of data, etc.) and several functions.</p>
+<ul class="simple">
+<li><p><strong>app.layout</strong> describes what the application looks like and is a hierarchical tree of components. the dash_html_components library provides classes for all HTML and keyword arguments describing HTML attributes such as style, className, and id. the dash_core_components library generates higher level components such as controls and graphics.</p></li>
+<li><p>The <strong>callback function</strong> allows to update the <em>output</em> component on the page (the HTML div) each time the value of the <em>input</em> component (the text zone) is modified.</p></li>
+</ul>
+<dl class="py function">
+<dt class="sig sig-object py" id="filter_dataframe">
+<span class="sig-name descname"><span class="pre">filter_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">year_slider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month_slider</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#filter_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df1</strong> – the data frame containing PT (Pressure), TT (Temperature Transmission), FT (Flow Transmission) and PCV                   (Pressure Control Valve) data.
+This data set has been loaded in the top part of the code.</p></li>
+<li><p><strong>year_slider</strong> – recovers the selected year</p></li>
+<li><p><strong>month_slider</strong> – recovers the selected month</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>filtered_df (filtered data).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>The inputs and outputs of following functions are retrieved in the decorator <strong>&#64;app.callback</strong>.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="update_figure">
+<span class="sig-name descname"><span class="pre">update_figure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year_slider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month_slider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curve_selector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graphe_selector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station_selector</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#update_figure" title="Permalink to this definition">¶</a></dt>
+<dd><p>In this function we use two functions. The first one is the <strong>filter_dataframe</strong> function to filter the data according to the user’s selection. And the second one is the <strong>update_figure_general</strong> function implemented in another script (<em>update_figure.py</em>). This allows us to simplify our main script (<em>app.py</em>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>year_slider</strong> – which retrieves the selected year</p></li>
+<li><p><strong>month_slider</strong> – which retrieves the selected month</p></li>
+<li><p><strong>curve_selector</strong> – which retrieves the selected curve</p></li>
+<li><p><strong>graphe_selector</strong> – which retrieves the selected graph</p></li>
+<li><p><strong>station_selector</strong> – which retrieves the selected station</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>figure (graph of data evolution over time)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="update_figure_energy">
+<span class="sig-name descname"><span class="pre">update_figure_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year_slider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month_slider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station_selector</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#update_figure_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Here we also use the <strong>filter_dataframe</strong> function and the <strong>update_figure_energy_general</strong> function, another function implemented in the <em>update_figure.py</em> script.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>year_slider</strong> – which retrieves the selected year</p></li>
+<li><p><strong>month_slider</strong> – which retrieves the selected month</p></li>
+<li><p><strong>station_selector</strong> – which retrieves the selected station</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>figure (graph of energy consumption)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="update_figure_motors">
+<span class="sig-name descname"><span class="pre">update_figure_motors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year_slider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month_slider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station_selector</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#update_figure_motors" title="Permalink to this definition">¶</a></dt>
+<dd><p>As the two previous functions, we use the <strong>filter_dataframe</strong> function and the <strong>update_figure_motors_general</strong> function contained in the <em>update_figure.py</em> script.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>year_slider</strong> – which retrieves the selected year</p></li>
+<li><p><strong>month_slider</strong> – which retrieves the selected month</p></li>
+<li><p><strong>station_selector</strong> – which retrieves the selected station</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>figure (barplot graph of motors)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="update_offline">
+<span class="sig-name descname"><span class="pre">update_offline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#update_offline" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – data of stations status</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>value (number of offline stations)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="update_not_available">
+<span class="sig-name descname"><span class="pre">update_not_available</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#update_not_available" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – data of stations status</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>value (number of not available stations)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="update_coming_soon">
+<span class="sig-name descname"><span class="pre">update_coming_soon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#update_coming_soon" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – data of stations status</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>value (number of coming soon stations)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="update_available">
+<span class="sig-name descname"><span class="pre">update_available</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#update_available" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – data of stations status</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>value (number of available stations)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="update_figure.html" class="btn btn-neutral float-right" title="update_figure" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="modules.html" class="btn btn-neutral float-left" title="McView WebDashboard" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, RAMDE ISMAIL &amp; RIVERA HECTOR.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

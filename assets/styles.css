@@ -58,14 +58,14 @@ body {
   display: flex;
 }
 
-#individual_graph,
-#aggregate_graph {
+#pie_graph,
+#motors_graph {
   width: calc(100% - 30px);
-  position: absolute;
+  position: relative;
 }
 
 #count_graph {
-  position: absolute;
+  position: relative;
   height: calc(100% - 30px);
   width: calc(100% - 30px);
 }
@@ -95,11 +95,12 @@ body {
 
 .mini_container {
   border-radius: 5px;
-  background-color: #f9f9f9;
+  background-color: #d1d1d1;
   margin: 10px;
   padding: 15px;
   position: relative;
   box-shadow: 2px 2px 2px lightgrey;
+  text-align: center;
 }
 
 #right-column {
@@ -107,24 +108,52 @@ body {
   flex-direction: column;
 }
 
-#wells {
+#energy {
   flex: 1;
 }
 
-#gas {
+#offline {
+  font-weight: normal;
+  font-weight: bold;
+  font-weight: 500;
+  font-size: 18px;
   flex: 1;
+  background-color: white;
+}
+
+#not_available {
+   font-weight: normal;
+  font-weight: bold;
+  font-weight: 500;
+  font-size: 18px;
+  flex: 1;
+  background-color: #e2e2e2
 }
 
 #aggregate_data {
   align-items: center;
 }
 
-#oil {
+#coming_soon {
+  color: white;
+  font-weight: normal;
+  font-weight: bold;
+  font-weight: 500;
+  font-size: 18px;
   flex: 1;
+  background-color: #152538
+ 
+
 }
 
-#water {
+#available {
+  font-weight: normal;
+  font-weight: bold;
+  font-weight: 500;
+  font-size: 18px;
   flex: 1;
+  background-color: #1a9dff;
+  color: white;
 }
 
 #tripleContainer {
@@ -137,7 +166,7 @@ body {
   flex-direction: column;
 }
 
-#pie_graph > div > div > svg:nth-child(3) > g.infolayer > g.legend {
+#energy_graph > div > div > svg:nth-child(3) > g.infolayer > g.legend {
   pointer-events: all;
   transform: translate(30px, 349px);
 }

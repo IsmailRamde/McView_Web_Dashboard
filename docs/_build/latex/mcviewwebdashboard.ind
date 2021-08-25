@@ -1,0 +1,79 @@
+\begin{sphinxtheindex}
+\let\bigletter\sphinxstyleindexlettergroup
+\let\spxpagem \sphinxstyleindexpagemain
+\let\spxentry \sphinxstyleindexentry
+\let\spxextra \sphinxstyleindexextra
+
+  \bigletter B
+  \item \spxentry{built\sphinxhyphen{}in function}
+    \subitem \spxentry{Data\_MAP()}, \hyperpage{4}
+    \subitem \spxentry{filter\_dataframe()}, \hyperpage{1}
+    \subitem \spxentry{Insert\_DF\_inGsheets()}, \hyperpage{3}
+    \subitem \spxentry{openDF()}, \hyperpage{4}
+    \subitem \spxentry{SortH2MDistributionData()}, \hyperpage{4}
+    \subitem \spxentry{SortH2MEnergyData()}, \hyperpage{4}
+    \subitem \spxentry{SortH2MotorsData()}, \hyperpage{4}
+    \subitem \spxentry{update\_available()}, \hyperpage{2}
+    \subitem \spxentry{update\_coming\_soon()}, \hyperpage{2}
+    \subitem \spxentry{update\_figure()}, \hyperpage{1}
+    \subitem \spxentry{update\_figure\_energy()}, \hyperpage{2}
+    \subitem \spxentry{update\_figure\_energy\_general()}, \hyperpage{3}
+    \subitem \spxentry{update\_figure\_general()}, \hyperpage{3}
+    \subitem \spxentry{update\_figure\_motors()}, \hyperpage{2}
+    \subitem \spxentry{update\_figure\_motors\_general()}, \hyperpage{3}
+    \subitem \spxentry{update\_not\_available()}, \hyperpage{2}
+    \subitem \spxentry{update\_offline()}, \hyperpage{2}
+
+  \indexspace
+  \bigletter D
+  \item \spxentry{Data\_MAP()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{4}
+
+  \indexspace
+  \bigletter F
+  \item \spxentry{filter\_dataframe()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{1}
+
+  \indexspace
+  \bigletter I
+  \item \spxentry{Insert\_DF\_inGsheets()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{3}
+
+  \indexspace
+  \bigletter O
+  \item \spxentry{openDF()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{4}
+
+  \indexspace
+  \bigletter S
+  \item \spxentry{SortH2MDistributionData()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{4}
+  \item \spxentry{SortH2MEnergyData()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{4}
+  \item \spxentry{SortH2MotorsData()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{4}
+
+  \indexspace
+  \bigletter U
+  \item \spxentry{update\_available()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{2}
+  \item \spxentry{update\_coming\_soon()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{2}
+  \item \spxentry{update\_figure()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{1}
+  \item \spxentry{update\_figure\_energy()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{2}
+  \item \spxentry{update\_figure\_energy\_general()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{3}
+  \item \spxentry{update\_figure\_general()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{3}
+  \item \spxentry{update\_figure\_motors()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{2}
+  \item \spxentry{update\_figure\_motors\_general()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{3}
+  \item \spxentry{update\_not\_available()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{2}
+  \item \spxentry{update\_offline()}
+    \subitem \spxentry{built\sphinxhyphen{}in function}, \hyperpage{2}
+
+\end{sphinxtheindex}
